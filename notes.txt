@@ -1,0 +1,57 @@
+Idea: Hosting a budget webapp on a RasbPI/Laptop server. 
+
+Interface:              |Server:                 |Database:                                                          |
+  Term:                 | (Imma cut this out for |  History                                                          |
+    Sel Acct            |    now)                |    Action      : Time : Amt : Cat          : Acct From : Acct To  |
+    Deposit             |                        |     "Deposit"  :      :     :  "Food"      :           :          |
+    Withdraw            |                        |     "Withdraw" :      :     :  "Transport" :           :          |
+    Transfer            |                        |     "Transfer" :      :     :  "Housing"   :           :          |
+    Mortgage Pmt        |                        |                :      :     :  "Personal"  :           :          |
+    Mortgage Prin. Pmt  |                        |                :      :     :  "Giving"    :           :          |
+                        |                        |  Accounts                                                         |
+                        |                        |    Name : Type      : Super Account : Balance : Config            |
+                        |                        |         :  "Bank"   :               :         :  (Json of         |
+                        |                        |         :  "Credit" :               :         :    config options |
+                        |                        |         :  "Mort"   :               :         :    for different  |
+                        |                        |                                                    acct types)    |
+                        |                        |                                                                   |
+                        |                        |                                                                   |
+                        |                        |                                                                   |
+                        |                        |                                                                   |
+                        |                        |                                                                   |
+                        |                        |                                                                   |
+                        |                        |                                                                   |
+                   
+Account: 
+    has a:
+        balance
+        logical(sub)-accounts
+    operations:
+        Get/Set Balance (Deposit/Withdraw)
+
+Credit Card:
+    Inherits from: Account
+    has a: 
+        limit
+    operations:
+        Get/Set Limit
+
+Mortgage:
+    Inherits from: Account
+    has a: 
+        Principle
+        Interest Rate
+        Escrow balance
+        Partial Fund
+        Mortgage Ins.
+        Total Paid
+    operations:
+        Get/Set Principle
+        Make Pmt
+        Make Principle Pmt
+
+
+
+
+
+
