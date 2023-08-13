@@ -3,18 +3,46 @@ Idea: Hosting a budget webapp on a RasbPI/Laptop server.
 Base everything off the idea of a transaction.
 Every cashflow has a transaction
 Transaction:
-    has a:
-        - name
-        - description
-        - date/time
-        - amount (dollars, cents)
-        - category: HOUSING, CAR, FOOD, MISC, GIVING, FUN, 
+    - name
+    - description
+    - date/time
+    - amount (dollars, cents)
+    - category: (has to match category in category table)
+                HOUSING, CAR, FOOD, MISC, GIVING, FUN, 
 
 CLI:
-    can:
-        - insert transaction into table
-        - read [timeperiod] expenses defaults to monthly shortcuts to 6M, year to date, 12 M, calendar year
-        - overview/breakdown view overview of expenses breakdown
+    - output transaction from account
+        - takes: (hash) {name, date, desc, amount, category}
+    - input transaction into account
+        - takes: (hash) { total, (multiple)category => amount }
+    - breakdown view overview of expenses breakdown
+        - takes: (option) { month, 6month, year, ytd, custom [date_range] }
+    - list recent transactions in a table
+        - takes: (option) { limit [num], month, custom [date_range] }
+    - add category
+        - takes: (hash) {name, type, balance, target}
+    - update category
+        - takes: (hash) {name, type, balance, target}
+    - remove category
+        - takes: name
+    - edit transaction
+        - takes: trans_num, (hash) {name, date, desc, amount, category}
+    - remove transaction
+        - takes: trans_num
+
+Inputs:    |       Accounts              |          Outflow
+  Type     |        One of               |
+    Salary |          emergency          |          name 
+    Bonus  |          car                |          date
+    Misc   |          housing            |          desc
+  Breakup  |          food               |          amount
+           |          giving             |          category
+           |          savings            |
+           |          fun                |
+           |        Balance              |
+           |        Full amt             |
+           |         (or)                |
+           |        Monthly              |
 
 OLD:
 
