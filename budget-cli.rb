@@ -4,6 +4,7 @@ require 'sqlite3'
 
 InsertArgs = Struct.new(:name, :date, :description, :amount_dollars, :amount_cents, :category)
 BreakdownArgs = Struct.new(:date_begin, :date_end)
+RecentArgs = Struct.new(:limit)
 CATEGORIES = ["housing", "car", "food", "misc", "giving", "fun"] 
 
 db = SQLite3::Database.new "test.db"
@@ -47,7 +48,7 @@ end
 
 def validateBreakdownArgs
   breakargs = BreakdownArgs.new()
-  if ARGV.length != breakargs.length # We split amount into two for InsertArgs
+  if ARGV.length != breakargs.length
     raise "Format wrong"
   end
   date_begin = ARGV[0]
@@ -62,6 +63,20 @@ def validateBreakdownArgs
     breakargs.date_end = date_end
   end
   breakargs
+end
+
+def validateRecentArgs
+  recentargs = RecentArgs.new()
+  if ARGV.length != recentargs.length
+    raise "Format wrong"
+  end
+  limit = ARGV[0].to_i
+  if limit > 0
+    recentargs.limit = limit
+  else
+    raise "Enter limit > 0"
+  end
+  recentargs
 end
 
 if options.insert
@@ -83,6 +98,22 @@ elsif options.breakdown
     total += amt
   end
   puts "Total: #{total}"
+elsif options.recent
+  rows = db.execute "SELECT * FROM transactions"
+  args = validateRecentArgs
+  row_count = 0 
+
+  puts " name | date | desc | amount | cat "
+  rows.reverse_each do |row|
+    name = row[0]
+    date = row[1]
+    desc = row[2]
+    amount = DollarFixedPt.new(row[3], row[4])
+    cat = row[5]
+    puts " #{name} | #{date} | #{desc} | #{amount} | #{cat} "
+    row_count += 1
+    break if row_count >= args.limit
+  end
 else 
   p "see help menu -h"
 end

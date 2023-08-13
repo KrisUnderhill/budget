@@ -1,8 +1,6 @@
 require 'optparse'
 
-Options = Struct.new(:insert, :breakdown)
-
-Cat = Struct.new(:category)
+Options = Struct.new(:insert, :breakdown, :recent)
 
 class Parser
   def self.parse
@@ -17,8 +15,13 @@ class Parser
       end
 
       opts.on("-b", "--breakdown",
-              "[begin-date end-date] show breakdwon of spending") do
+              "[begin-date end-date] show breakdown of spending") do
         args.breakdown = true
+      end
+
+      opts.on("-r", "--recent",
+              "[limit] show recent transactions") do
+        args.recent = true
       end
 
       opts.on("-h", "--help", "Prints this help") do
