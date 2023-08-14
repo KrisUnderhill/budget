@@ -41,9 +41,16 @@ class DollarFixedPt
   
   private
   def equal(obj)
+    if obj.class != DollarFixedPt
+      raise ArgumentError.new "Argument not DollarFixedPt type"
+    end
     return @dollars == obj.dollars && @cents == obj.cents
   end
   def greater(obj)
+    if obj.class != DollarFixedPt
+      raise ArgumentError.new "Argument not DollarFixedPt type"
+    end
+
     result = false
     if @dollars > obj.dollars
       result = true
