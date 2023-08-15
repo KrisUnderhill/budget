@@ -7,6 +7,8 @@ class Arguments
   @@OutputArgs = %w[name date desc amount category]
   @@BreakdownTypes = %w[month custom] #6m year ytd custom]
   @@BreakdownArgs = %w[type range_start range_end]
+  @@RecentTypes = %w[limit month date] 
+  @@RecentArgs = %w[type num range_start range_end]
 
   def initialize
     @operation = nil 
@@ -14,19 +16,64 @@ class Arguments
   end
 
   def set_output args
+    raise "Cannot set arguments for multiple operations" unless @operation == nil
     @operation = "output"
     @args = validateOutputArgs args
     nil
   end
 
   def set_breakdown args
+    raise "Cannot set arguments for multiple operations" unless @operation == nil
     @operation = "breakdown"
     @args = validateBreakdownArgs args
     nil
   end
 
+  def set_recent args
+    raise "Cannot set arguments for multiple operations" unless @operation == nil
+    @operation = "recent"
+    @args = validateRecentArgs args
+    nil
+  end
+
   private 
+  def validateRecentArgs args
+    if args[:type] == nil
+      raise "Type arg not found"
+    end
+    not_found = ->{ raise "type not found #{args[:type]}" }
+    @@RecentTypes.find(not_found) do |t|
+      t.casecmp(args[:type]) == 0 #same string case insensitive
+    end
+
+    if "limit".casecmp(args[:type]) == 0
+      raise "num param required for custom type" if args[:num] == nil
+      raise "num must be greater than 0" unless args[:num].to_i > 0
+      args[:num] = args[:num].to_i
+    end
+
+    if "date".casecmp(args[:type]) == 0
+      raise "range_start param required for date type" if args[:range_start] == nil
+      begin 
+        Date.strptime(args[:range_start], '%Y-%m-%d')
+      rescue RuntimeError
+        raise "Date format: yyyy-mm-dd"
+      end
+      if args[:range_end] != nil
+        begin 
+          Date.strptime(args[:range_end], '%Y-%m-%d')
+        rescue RuntimeError
+          raise "Date format: yyyy-mm-dd"
+        end
+      end
+    end
+    args
+  end
+
   def validateBreakdownArgs args
+    if args[:type] == nil
+      raise "Type arg not found"
+    end
     not_found = ->{ raise "type not found #{args[:type]}" }
     @@BreakdownTypes.find(not_found) do |t|
       t.casecmp(args[:type]) == 0 #same string case insensitive

@@ -18,10 +18,10 @@ class Parser
         args.set_breakdown(parse_args_from_h(inputs))
       end
 
-      #opts.on("-r", "--recent",
-      #        "[limit] show recent transactions") do
-      #  args.recent = true
-      #end
+      opts.on("-r", "--recent {hash}",
+              "show recent transactions, {type: limit [num], month, date [range_start, range_end]}") do |recents|
+        args.set_recent(parse_args_from_h(recents))
+      end
 
       opts.on("-h", "--help", "Prints this help") do
         puts opts

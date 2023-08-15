@@ -16,9 +16,9 @@ CLI:
     - input transaction into account
         - takes: (hash) { total, (multiple)category => amount }
     - breakdown view overview of expenses breakdown
-        - takes: (option) { month, 6month, year, ytd, custom [date_range] }
+        - takes: (hash) { month, 6month, year, ytd, custom [date_range] }
     - list recent transactions in a table
-        - takes: (option) { limit [num], month, custom [date_range] }
+        - takes: (hash) { limit [num], month, date [range_start, range_end] }
     - add category
         - takes: (hash) {name, type, balance, target}
     - update category
