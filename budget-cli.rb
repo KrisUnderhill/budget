@@ -48,14 +48,14 @@ elsif args.operation == "recent"
   date_begin = args.args[:range_start]
   date_end = args.args[:range_end]
   if type.casecmp("limit") == 0
-    rows = db.execute "SELECT * FROM transactions ORDER BY date DESC LIMIT (?)", args.args[:num]
+    rows = db.execute "SELECT rowid, * FROM transactions ORDER BY date DESC LIMIT (?)", args.args[:num]
   elsif type.casecmp("month") == 0
     today = Date.today
     month = today.month
     year = today.year
     date_begin = Date.new(year, month, 1).strftime("%Y-%m-%d") #first day of month
     date_end = Date.new(year, month+1, 1).prev_day.strftime("%Y-%m-%d")
-    rows = db.execute "SELECT * FROM transactions WHERE date BETWEEN (?) AND (?) ORDER BY date DESC", [date_begin, date_end]
+    rows = db.execute "SELECT rowid, * FROM transactions WHERE date BETWEEN (?) AND (?) ORDER BY date DESC", [date_begin, date_end]
   elsif type.casecmp("date") == 0
     if date_end == nil
       date_end = Date.today.strftime("%Y-%m-%d")
@@ -64,17 +64,58 @@ elsif args.operation == "recent"
   end
 
 
-  puts " name | date | desc | amount | cat "
+  puts " rowid | name | date | desc | amount | cat "
   rows.each do |row|
-    name = row[0]
-    date = row[1]
-    desc = row[2]
-    amount = DollarFixedPt.new(row[3], row[4])
-    cat = row[5]
-    puts " #{name} | #{date} | #{desc} | #{amount} | #{cat} "
+    rowid = row[0]
+    name = row[1]
+    date = row[2]
+    desc = row[3]
+    amount = DollarFixedPt.new(row[4], row[5])
+    cat = row[6]
+    puts "#{rowid} | #{name} | #{date} | #{desc} | #{amount} | #{cat} "
   end
+
+elsif args.operation == "input"
+  name = args.args[:name]
+  date = args.args[:date]
+  distribution = ""
+  args.args.each_pair do |key, value|
+    next if Arguments.get_input_args.include? key.to_s
+    distribution << "#{key}: #{value}, "
+  end
+  distribution.delete_suffix!(", ")
+  db.execute "INSERT INTO inputs VALUES (?, ?, ?)", 
+    [name, date, distribution]
+
+elsif args.operation == "add_account"
+  name = args.args[:name]
+  type = args.args[:type]
+  balance = args.args[:balance]
+  target = args.args[:target]
+  db.execute "INSERT INTO accounts VALUES (?, ?, ?, ?, ?, ?)", 
+    [name, type, balance.dollars, balance.cents, target.dollars, target.cents]
+
+elsif args.operation == "up_account"
+  name = args.args[:name]
+  type = args.args[:type]
+  balance = args.args[:balance]
+  target = args.args[:target]
+  db.execute "UPDATE accounts SET type = (?), balance_dollars = (?), balance_cents = (?), target_dollars = (?), target_cents = (?) WHERE UPPER(name) = UPPER(?)", 
+    [type, balance.dollars, balance.cents, target.dollars, target.cents, name]
+
+elsif args.operation == "rm_account"
+  name = args.args[:name]
+  db.execute "DELETE FROM accounts WHERE UPPER(name) = UPPER(?)", [name]
+
+elsif args.operation == "up_trans"
+  db.execute "UPDATE transactions SET name=(?),date=(?),description=(?),amount_dollars=(?),amount_cents=(?),category=(?) WHERE rowid=(?)", 
+    [args.args[:name], args.args[:date], args.args[:desc], args.args[:amount].dollars, args.args[:amount].cents, args.args[:category], args.args[:id]]
+
+elsif args.operation == "rm_trans"
+  id = args.args[:id]
+  db.execute "DELETE FROM transactions WHERE rowid=(?)", [id]
+
 else 
   p "see help menu -h"
 end
-
 

@@ -14,13 +14,43 @@ class Parser
       end
 
       opts.on("-b", "--breakdown {hash}",
-              "show breakdown of spending, {type (one of: {month custom 6m year ytd}, date_range(optional)}") do |inputs|
-        args.set_breakdown(parse_args_from_h(inputs))
+              "show breakdown of spending, {type (one of: {month custom 6m year ytd}, date_range(optional)}") do |breakdown|
+        args.set_breakdown(parse_args_from_h(breakdown))
       end
 
       opts.on("-r", "--recent {hash}",
-              "show recent transactions, {type: limit [num], month, date [range_start, range_end]}") do |recents|
-        args.set_recent(parse_args_from_h(recents))
+              "show recent transactions, {type: limit [num], month, date [range_start, range_end]}") do |recent|
+        args.set_recent(parse_args_from_h(recent))
+      end
+
+      opts.on("-i", "--input {hash}",
+              "Input funds into categories, {name, date, total, (multiple)category=>amount}") do |input|
+        args.set_input(parse_args_from_h(input))
+      end
+
+      opts.on("--add_account {hash}",
+              "Adds an account (hash) {name, type, balance, target}") do |add_account|
+        args.set_add_account(parse_args_from_h(add_account))
+      end
+
+      opts.on("--update_account {hash}",
+              "updates an account by name (hash) {name, type, balance, target}") do |up_account|
+        args.set_up_account(parse_args_from_h(up_account))
+      end
+
+      opts.on("--remove_account name",
+              "removes an account by name") do |name|
+        args.set_rm_account(name)
+      end
+
+      opts.on("--update_transaction {hash}",
+              "updates a transaction by id, {id, name, date, desc, amount, category") do |up_trans|
+        args.set_up_trans(parse_args_from_h(up_trans))
+      end
+
+      opts.on("--remove_transaction id",
+              "removes a transaction by id") do |id|
+        args.set_rm_trans(id)
       end
 
       opts.on("-h", "--help", "Prints this help") do

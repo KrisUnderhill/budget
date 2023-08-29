@@ -14,7 +14,7 @@ CLI:
     - output transaction from account
         - takes: (hash) {name, date, desc, amount, category}
     - input transaction into account
-        - takes: (hash) { total, (multiple)category => amount }
+        - takes: (hash) {name date total, (multiple)category => amount }
     - breakdown view overview of expenses breakdown
         - takes: (hash) { month, 6month, year, ytd, custom [date_range] }
     - list recent transactions in a table
