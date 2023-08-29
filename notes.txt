@@ -1,5 +1,15 @@
 Idea: Hosting a budget webapp on a RasbPI/Laptop server. 
 
+What's left: actually implementing the flows
+On Input/Trans (Add, Up, Remove)
+    should update the respective accounts appropraitely
+Should update Data.rb to Accounts.rb and actually access the database to error check
+Should update database so account name is unique, transaction/input tables have a primary key "id"
+    instead of using rowid for up/delete
+Should make a decision on Categories vs accounts and standardize
+should build UI
+
+
 Base everything off the idea of a transaction.
 Every cashflow has a transaction
 Transaction:
@@ -29,6 +39,8 @@ CLI:
         - takes: trans_num, (hash) {name, date, desc, amount, category}
     - remove transaction
         - takes: trans_num
+    - edit input
+    - remove input
 
 Inputs:    |       Accounts              |          Outflow
   Type     |        One of               |
