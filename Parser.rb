@@ -8,9 +8,9 @@ class Parser
     opt_parser = OptionParser.new do |opts|
       opts.banner = "Usage: budget-cli.rb [options]"
 
-      opts.on("-o {hash}", "--output {hash}",
+      opts.on("-t {hash}", "--transaction {hash}",
               "Insert transaction into table, {name, date, desc, amount, category}") do |output|
-        args.set_output(parse_args_from_h(output))
+        args.set_transaction(parse_args_from_h(output))
       end
 
       opts.on("-b", "--breakdown {hash}",

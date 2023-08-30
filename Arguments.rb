@@ -21,10 +21,10 @@ class Arguments
     @@InputArgs
   end
 
-  def set_output args
+  def set_transaction args
     raise "Cannot set arguments for multiple operations" unless @operation == nil
     @operation = "output"
-    @args = validateOutputArgs args
+    @args = validateTransaction args
     nil
   end
 
@@ -95,7 +95,7 @@ class Arguments
     raise "id arg not found" if args[:id] == nil
     id = args[:id]
     args.delete(:id)
-    args = validateOutputArgs(args)
+    args = validateTransaction(args)
     args[:id] = id
     args
   end
@@ -109,26 +109,12 @@ class Arguments
     end
 
     raise "balance arg not found" if args[:balance] == nil
-    if /(?<dollars>\d+)\.(?<cents>\d+)/ =~ args[:balance]
-      args[:balance] = DollarFixedPt.new(dollars.to_i, cents.to_i)
-    else
-      args[:balance] = DollarFixedPt.new(args[:balance].to_i, 0)
-    end
-
-    if args[:balance] < DollarFixedPt.new(0, 0)
-      raise "balance cannot be negative"
-    end
+    args[:balance] = DollarFixedPt.from_s(args[:balance])
+    raise "balance cannot be negative" if args[:balance] < DollarFixedPt.new(0, 0)
 
     raise "target arg not found" if args[:target] == nil
-    if /(?<dollars>\d+)\.(?<cents>\d+)/ =~ args[:target]
-      args[:target] = DollarFixedPt.new(dollars.to_i, cents.to_i)
-    else
-      args[:target] = DollarFixedPt.new(args[:target].to_i, 0)
-    end
-
-    if args[:target] <= DollarFixedPt.new(0, 0)
-      raise "target cannot be negative"
-    end
+    args[:target] = DollarFixedPt.from_s(args[:target])
+    raise "target cannot be negative" if args[:target] <= DollarFixedPt.new(0, 0)
     args
   end
 
@@ -142,15 +128,8 @@ class Arguments
     end
 
     raise "total arg not found" if args[:total] == nil
-    if /(?<dollars>\d+)\.(?<cents>\d+)/ =~ args[:total]
-      args[:total] = DollarFixedPt.new(dollars.to_i, cents.to_i)
-    else
-      args[:total] = DollarFixedPt.new(args[:total].to_i, 0)
-    end
-
-    if args[:total] <= DollarFixedPt.new(0, 0)
-      raise "total cannot be negative"
-    end
+    args[:total] = DollarFixedPt.from_s(args[:total])
+    raise "total cannot be negative" if args[:total] <= DollarFixedPt.new(0, 0)
 
     sum = DollarFixedPt.new(0, 0) 
     cats = Data.getCategoriesList
@@ -160,15 +139,8 @@ class Arguments
       cats.find(not_found) do |c|
         c == cat.to_s
       end
-      if /(?<dollars>\d+)\.(?<cents>\d+)/ =~ args[cat]
-        args[cat] = DollarFixedPt.new(dollars.to_i, cents.to_i)
-      else
-        args[cat] = DollarFixedPt.new(args[cat].to_i, 0)
-      end
-
-      if args[cat] <= DollarFixedPt.new(0, 0)
-        raise "amount cannot be negative"
-      end
+      args[cat] = DollarFixedPt.from_s(args[cat])
+      raise "amount cannot be negative" if args[cat] <= DollarFixedPt.new(0,0)
 
       sum += args[cat]
     end
@@ -238,14 +210,10 @@ class Arguments
     args
   end
 
-  def validateOutputArgs args
-    if args.length != @@OutputArgs.length
-      raise "Format wrong"
-    end
-
-    if args[:name] == nil
-      raise "Missing name parameter"
-    end
+  def validateTransaction args
+    raise "Missing name parameter" if args[:name] == nil
+    raise "Missing date parameter" if args[:date] == nil
+    raise "Missing desc parameter" if args[:desc] == nil
 
     begin 
       Date.strptime(args[:date], '%Y-%m-%d')
@@ -253,16 +221,8 @@ class Arguments
       raise "Date format: yyyy-mm-dd"
     end
 
-    if args[:amount] == nil
-      raise "Missing amount parameter"
-    end
-
-    if /(?<dollars>\d+)\.(?<cents>\d+)/ =~ args[:amount]
-      args[:amount] = DollarFixedPt.new(dollars.to_i, cents.to_i)
-    else
-      args[:amount] = DollarFixedPt.new(args[:amount].to_i, 0)
-    end
-
+    raise "Missing amount parameter" if args[:amount] == nil
+    args[:amount] = DollarFixedPt.from_s(args[:amount])
     if args[:amount] <= DollarFixedPt.new(0, 0)
       raise "amount cannot be negative"
     end

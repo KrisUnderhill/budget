@@ -6,6 +6,14 @@ class DollarFixedPt
     @cents = cents
   end
 
+  def self.from_s(string)
+    if /(?<dollars>\d+)\.(?<cents>\d+)/ =~ string
+      return DollarFixedPt.new(dollars.to_i, cents.to_i)
+    else
+      return DollarFixedPt.new(string.to_i, 0)
+    end
+  end
+
   def +(obj)
     @cents += obj.cents
     if(@cents >= 100)
