@@ -7,7 +7,8 @@ Should update Data.rb to Accounts.rb and actually access the database to error c
 Should update database so account name is unique, transaction/input tables have a primary key "id"
     instead of using rowid for up/delete
 Should make a decision on Categories vs accounts and standardize
-should build UI
+Should build UI
+Should add a class that handles the database formats/building hashes/arrays to insert
 
 
 Base everything off the idea of a transaction.
@@ -107,9 +108,4 @@ Mortgage:
         Get/Set Principle
         Make Pmt
         Make Principle Pmt
-
-
-
-
-
 

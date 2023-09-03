@@ -1,13 +1,20 @@
 require_relative 'Parser'
 require_relative 'Money'
+require_relative 'Database'
 require 'sqlite3'
 
 db = SQLite3::Database.new "test.db"
 args = Parser.parse
 
-if args.operation == "output"
-  db.execute "INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?)", 
-    [args.args[:name], args.args[:date], args.args[:desc], args.args[:amount].dollars, args.args[:amount].cents, args.args[:category]]
+if args.operation == "transaction"
+  Transaction.add_transaction(args.args)
+
+elsif args.operation == "up_trans"
+  Transaction.up_transaction(args.args)
+
+elsif args.operation == "rm_trans"
+  Transaction.rm_transaction(args.args[:id])
+
 elsif args.operation == "breakdown"
   # set date range by type
   type = args.args[:type]
@@ -27,7 +34,7 @@ elsif args.operation == "breakdown"
 
   # execute query
   amt_by_cat = {}
-  Data.getCategoriesList.each { |e| amt_by_cat[e] = DollarFixedPt.new(0,0)}
+  Account.getAccountList.each { |e| amt_by_cat[e] = DollarFixedPt.new(0,0)}
   db.execute "SELECT * FROM transactions WHERE date BETWEEN (?) AND (?)", [date_begin, date_end] do |row|
     dollars = row[3]
     cents = row[4]
@@ -107,15 +114,8 @@ elsif args.operation == "rm_account"
   name = args.args[:name]
   db.execute "DELETE FROM accounts WHERE UPPER(name) = UPPER(?)", [name]
 
-elsif args.operation == "up_trans"
-  db.execute "UPDATE transactions SET name=(?),date=(?),description=(?),amount_dollars=(?),amount_cents=(?),category=(?) WHERE rowid=(?)", 
-    [args.args[:name], args.args[:date], args.args[:desc], args.args[:amount].dollars, args.args[:amount].cents, args.args[:category], args.args[:id]]
-
-elsif args.operation == "rm_trans"
-  id = args.args[:id]
-  db.execute "DELETE FROM transactions WHERE rowid=(?)", [id]
-
 else 
+  p Database::Account.getAccountList
   p "see help menu -h"
 end
 

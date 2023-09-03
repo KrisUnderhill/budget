@@ -1,9 +1,9 @@
 require_relative 'Money'
-require_relative 'Data'
+require_relative 'Database'
 
 class Arguments
   attr_accessor :operation, :args
-  @@Operations = %w[output input breakdown list add_account up_account rm_account up_trans rm trans]
+  @@Operations = %w[transaction input breakdown list add_account up_account rm_account up_trans rm trans]
   @@OutputArgs = %w[name date desc amount category]
   @@BreakdownTypes = %w[month custom] #6m year ytd custom]
   @@BreakdownArgs = %w[type range_start range_end]
@@ -23,7 +23,7 @@ class Arguments
 
   def set_transaction args
     raise "Cannot set arguments for multiple operations" unless @operation == nil
-    @operation = "output"
+    @operation = "transaction"
     @args = validateTransaction args
     nil
   end
@@ -67,7 +67,7 @@ class Arguments
     raise "Cannot set arguments for multiple operations" unless @operation == nil
     @operation = "rm_account"
     not_found = ->{ raise "account not found #{args[:account]}" }
-    cats = Data.getCategoriesList
+    cats = Account.getAccountList
     cats.find(not_found) do |c|
       c == name
     end
@@ -85,7 +85,7 @@ class Arguments
   def set_rm_trans id
     raise "Cannot set arguments for multiple operations" unless @operation == nil
     @operation = "rm_trans"
-    raise "Cannot find id" unless Data.isIdValid id
+    raise "Cannot find id" unless Transaction.isIdValid id
     @args[:id] = id
     nil
   end
@@ -132,7 +132,7 @@ class Arguments
     raise "total cannot be negative" if args[:total] <= DollarFixedPt.new(0, 0)
 
     sum = DollarFixedPt.new(0, 0) 
-    cats = Data.getCategoriesList
+    cats = Account.getAccountList
     input_cats = args.keys.delete_if {|elem| @@InputArgs.include? elem.to_s }
     input_cats.each do |cat|
       not_found = ->{ raise "category not found #{cat}" }
@@ -228,7 +228,7 @@ class Arguments
     end
   
     not_found = ->{ raise "category not found #{args[:category]}" }
-    cats = Data.getCategoriesList
+    cats = Account.getAccountList
     cats.find(not_found) do |c|
       c == args[:category]
     end
