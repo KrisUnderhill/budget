@@ -1,15 +1,18 @@
 Idea: Hosting a budget webapp on a RasbPI/Laptop server. 
 
-What's left: actually implementing the flows
+What's left: 
+Should re-build CLI
+Should build UI
+Should add a class that handles the database formats/building hashes/arrays to insert
+
+Done:
+actually implementing the flows
 On Input/Trans (Add, Up, Remove)
     should update the respective accounts appropraitely
 Should update Data.rb to Accounts.rb and actually access the database to error check
 Should update database so account name is unique, transaction/input tables have a primary key "id"
-    instead of using rowid for up/delete
+    instead of using rowid for up/delete - still using rowid - may be more efficient for sql
 Should make a decision on Categories vs accounts and standardize
-Should build UI
-Should add a class that handles the database formats/building hashes/arrays to insert
-
 
 Base everything off the idea of a transaction.
 Every cashflow has a transaction
