@@ -82,6 +82,9 @@ class DollarFixedPt
   
   private
   def equal(obj)
+    if obj == nil
+      return false
+    end
     if obj.class != DollarFixedPt
       raise DollarFixedPtError, "Argument not DollarFixedPt type"
     end

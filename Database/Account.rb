@@ -6,6 +6,7 @@ module Database
     GET_NAMES_DB_STRING = "SELECT name FROM accounts".freeze
     GET_BALANCE_DB_STRING = "SELECT balance FROM accounts where UPPER(name)=UPPER((?))"
     UPDATE_BALANCE_DB_STRING = "UPDATE accounts SET balance=(?) WHERE UPPER(name) = UPPER(?)"
+    SELECT_TABLE_DB_STRING = "SELECT * FROM accounts"
     def self.addAccount hash
       Database::DB.execute ADD_DB_STRING,
         [hash[:name], hash[:type], hash[:balance].to_s, hash[:target].to_s]
@@ -38,6 +39,10 @@ module Database
         balance += DollarFixedPt.from_s(amount)
         Database::DB.execute UPDATE_BALANCE_DB_STRING, [balance.to_s, name.to_s]
       end
+    end
+
+    def self.getTable
+      return Database::DB.execute SELECT_TABLE_DB_STRING
     end
 
     private

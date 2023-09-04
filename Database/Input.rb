@@ -4,6 +4,9 @@ module Database
     RM_DB_STRING = "DELETE FROM inputs WHERE rowid=(?)"
     UP_DB_STRING = "UPDATE inputs SET name=(?),date=(?),distribution=(?) WHERE rowid=(?)" 
     SELECT_DB_STRING = "SELECT distribution FROM inputs WHERE rowid=(?)"
+    SELECT_RECENT_LIMIT_STRING = "SELECT rowid, * FROM inputs ORDER BY date DESC LIMIT (?)"
+    SELECT_RECENT_DATE_STRING = "SELECT rowid, * FROM inputs WHERE date BETWEEN (?) AND (?) ORDER BY date DESC"
+
     def self.addInput hash
       Database::DB.execute ADD_DB_STRING,
         [hash[:name], hash[:date], hash[:distribution].to_s]
@@ -27,6 +30,18 @@ module Database
     def self.isIdValid id
       row = Database::DB.execute SELECT_DB_STRING, [id]
       return row.size > 0
+    end
+
+    def self.recentByLimit num
+      rows = Database::DB.execute SELECT_RECENT_LIMIT_STRING, num
+      rows.each { |row| row[3] = parseDistribution row[3]}
+      return rows
+    end
+
+    def self.recentByDate date_begin, date_end
+      rows = Database::DB.execute SELECT_RECENT_DATE_STRING, [date_begin, date_end]
+      rows.each { |row| row[3] = parseDistribution row[3]}
+      return rows
     end
 
     private 

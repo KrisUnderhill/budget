@@ -1,7 +1,6 @@
 Idea: Hosting a budget webapp on a RasbPI/Laptop server. 
 
 What's left: 
-Should re-build CLI
 Should build UI
 Should add a class that handles the database formats/building hashes/arrays to insert
 Should in account creation, deletion, update prevent money from being created or destroyed.

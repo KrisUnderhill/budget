@@ -106,7 +106,19 @@ class Arguments
     nil
   end
 
-  
+  def set_list_accounts
+    raise "Cannot set arguments for multiple operations" unless @operation == nil
+    @operation = "list_accounts"
+    @args = {}
+    nil
+  end
+
+  def set_recent_inputs args 
+    raise "Cannot set arguments for multiple operations" unless @operation == nil
+    @operation = "input_recent"
+    @args = validateRecentArgs args
+    nil
+  end
 
   private 
   def validateUpTransArgs args
