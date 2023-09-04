@@ -44,8 +44,8 @@ module Database
       #(or) no space then : followed by one or more space
       #value (can use spaces if surrounded by single quote (')
       #ending with 0 or 1 comma
-      while /\s*(?<key>(\"\w+\"))=>(?<value>(\"[\w.\-\$]*\")),?/ =~ string
-        hash[key.delete("\"").to_sym] = value.delete("\"")
+      while /\s*(?<key>(:\w+|\"\w+\"))=>(?<value>(\"[\w.\$-]*\")),?/ =~ string
+        hash[key.delete(":\"").to_sym] = value.delete("\"")
         string = $' # string after match
       end
       hash

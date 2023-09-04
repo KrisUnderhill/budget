@@ -4,12 +4,13 @@ require_relative 'Database'
 class Arguments
   attr_accessor :operation, :args
   @@Operations = %w[transaction input breakdown list add_account up_account rm_account up_trans rm trans]
-  @@OutputArgs = %w[name date desc amount category]
+  @@OutputArgs = %w[name date desc amount account]
   @@BreakdownTypes = %w[month custom] #6m year ytd custom]
   @@BreakdownArgs = %w[type range_start range_end]
   @@RecentTypes = %w[limit month date] 
   @@RecentArgs = %w[type num range_start range_end]
-  @@InputArgs = %w[name date total] #also any category/account
+  @@InputArgs = %w[name date] #also any account
+  @@UpInputArgs = %w[name date id] #also any account
   @@AccountTypes = %w[revolving static]
 
   def initialize
@@ -28,17 +29,18 @@ class Arguments
     nil
   end
 
-  def set_breakdown args
+  def set_up_trans args
     raise "Cannot set arguments for multiple operations" unless @operation == nil
-    @operation = "breakdown"
-    @args = validateBreakdownArgs args
+    @operation = "up_trans"
+    @args = validateUpTransArgs args
     nil
   end
 
-  def set_recent args
+  def set_rm_trans id
     raise "Cannot set arguments for multiple operations" unless @operation == nil
-    @operation = "recent"
-    @args = validateRecentArgs args
+    @operation = "rm_trans"
+    raise "Cannot find id" unless Database::Transaction.isIdValid id
+    @args[:id] = id
     nil
   end
 
@@ -46,6 +48,21 @@ class Arguments
     raise "Cannot set arguments for multiple operations" unless @operation == nil
     @operation = "input"
     @args = validateInputArgs args
+    nil
+  end
+
+  def set_rm_input id
+    raise "Cannot set arguments for multiple operations" unless @operation == nil
+    @operation = "rm_input"
+    raise "id not valid" unless Database::Input.isIdValid id
+    @args[:id] = id
+    nil
+  end
+
+  def set_up_input args
+    raise "Cannot set arguments for multiple operations" unless @operation == nil
+    @operation = "up_input"
+    @args = validateUpInputArgs args
     nil
   end
 
@@ -67,28 +84,29 @@ class Arguments
     raise "Cannot set arguments for multiple operations" unless @operation == nil
     @operation = "rm_account"
     not_found = ->{ raise "account not found #{args[:account]}" }
-    cats = Account.getAccountList
-    cats.find(not_found) do |c|
-      c == name
+    accs = Database::Account.getAccountList
+    accs.find(not_found) do |a|
+      name.casecmp(a) == 0
     end
     @args[:name] = name
     nil
   end
 
-  def set_up_trans args
+  def set_breakdown args
     raise "Cannot set arguments for multiple operations" unless @operation == nil
-    @operation = "up_trans"
-    @args = validateUpTransArgs args
+    @operation = "breakdown"
+    @args = validateBreakdownArgs args
     nil
   end
 
-  def set_rm_trans id
+  def set_recent args
     raise "Cannot set arguments for multiple operations" unless @operation == nil
-    @operation = "rm_trans"
-    raise "Cannot find id" unless Transaction.isIdValid id
-    @args[:id] = id
+    @operation = "recent"
+    @args = validateRecentArgs args
     nil
   end
+
+  
 
   private 
   def validateUpTransArgs args
@@ -102,6 +120,7 @@ class Arguments
 
   def validateAccountChangeArgs args
     raise "name arg not found" if args[:name] == nil
+    args[:new_name] = args[:name] if args[:new_name] == nil
     raise "Type arg not found" if args[:type] == nil
     not_found = ->{ raise "type not found #{args[:type]}" }
     @@AccountTypes.find(not_found) do |t|
@@ -127,26 +146,46 @@ class Arguments
       raise "Date format: yyyy-mm-dd"
     end
 
-    raise "total arg not found" if args[:total] == nil
-    args[:total] = DollarFixedPt.from_s(args[:total])
-    raise "total cannot be negative" if args[:total] <= DollarFixedPt.new(0, 0)
-
-    sum = DollarFixedPt.new(0, 0) 
-    cats = Account.getAccountList
-    input_cats = args.keys.delete_if {|elem| @@InputArgs.include? elem.to_s }
-    input_cats.each do |cat|
-      not_found = ->{ raise "category not found #{cat}" }
-      cats.find(not_found) do |c|
-        c == cat.to_s
+    accounts = Database::Account.getAccountList
+    distribution = args.select { |key,value| !@@InputArgs.include? key.to_s }
+    args = args.select { |key,value| @@InputArgs.include? key.to_s }
+    distribution.keys.each do |acc|
+      not_found = ->{ raise "account not found #{acc}" }
+      accounts.find(not_found) do |a|
+        a.casecmp(acc.to_s) == 0
       end
-      args[cat] = DollarFixedPt.from_s(args[cat])
-      raise "amount cannot be negative" if args[cat] <= DollarFixedPt.new(0,0)
-
-      sum += args[cat]
+      amount = DollarFixedPt.from_s(distribution[acc])
+      raise "amount cannot be negative" if amount <= DollarFixedPt.zero
     end
-    raise "Total must equal sum of category amounts" unless args[:total] == sum
+    args[:distribution] = distribution
     args
   end
+
+  def validateUpInputArgs args
+    raise "id arg not found" if args[:id] == nil
+    raise "id not valid" unless Database::Input.isIdValid args[:id]
+    raise "name arg not found" if args[:name] == nil
+    raise "date arg not found" if args[:date] == nil
+    begin 
+      Date.strptime(args[:date], '%Y-%m-%d')
+    rescue RuntimeError
+      raise "Date format: yyyy-mm-dd"
+    end
+    accounts = Database::Account.getAccountList
+    distribution = args.select { |key,value| !@@UpInputArgs.include? key.to_s }
+    args = args.select { |key,value| @@UpInputArgs.include? key.to_s }
+    distribution.keys.each do |acc|
+      not_found = ->{ raise "account not found #{acc}" }
+      accounts.find(not_found) do |a|
+        a.casecmp(acc.to_s) == 0
+      end
+      amount = DollarFixedPt.from_s(distribution[acc])
+      raise "amount cannot be negative" if amount <= DollarFixedPt.zero
+    end
+    args[:distribution] = distribution
+    args
+  end
+
 
   def validateRecentArgs args
     if args[:type] == nil
@@ -223,14 +262,15 @@ class Arguments
 
     raise "Missing amount parameter" if args[:amount] == nil
     args[:amount] = DollarFixedPt.from_s(args[:amount])
-    if args[:amount] <= DollarFixedPt.new(0, 0)
+    if args[:amount] <= DollarFixedPt.zero
       raise "amount cannot be negative"
     end
   
-    not_found = ->{ raise "category not found #{args[:category]}" }
-    cats = Account.getAccountList
-    cats.find(not_found) do |c|
-      c == args[:category]
+    raise "Missing account parameter" if args[:account] == nil
+    not_found = ->{ raise "account not found #{args[:account]}" }
+    accs = Database::Account.getAccountList
+    accs.find(not_found) do |a|
+      args[:account].casecmp(a) == 0
     end
     args
   end

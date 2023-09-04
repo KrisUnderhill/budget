@@ -7,13 +7,31 @@ db = SQLite3::Database.new "test.db"
 args = Parser.parse
 
 if args.operation == "transaction"
-  Transaction.add_transaction(args.args)
+  Database::Transaction.addTrans(args.args)
 
 elsif args.operation == "up_trans"
-  Transaction.up_transaction(args.args)
+  Database::Transaction.upTrans(args.args)
 
 elsif args.operation == "rm_trans"
-  Transaction.rm_transaction(args.args[:id])
+  Database::Transaction.rmTrans(args.args[:id])
+
+elsif args.operation == "input"
+  Database::Input.addInput(args.args)
+  
+elsif args.operation == "rm_input"
+  Database::Input.rmInput(args.args[:id])
+
+elsif args.operation == "up_input"
+  Database::Input.upInput(args.args)
+
+elsif args.operation == "add_account"
+  Database::Account.addAccount(args.args)
+
+elsif args.operation == "up_account"
+  Database::Account.upAccount(args.args)
+
+elsif args.operation == "rm_account"
+  Database::Account.rmAccount(args.args[:name])
 
 elsif args.operation == "breakdown"
   # set date range by type
@@ -82,40 +100,8 @@ elsif args.operation == "recent"
     puts "#{rowid} | #{name} | #{date} | #{desc} | #{amount} | #{cat} "
   end
 
-elsif args.operation == "input"
-  name = args.args[:name]
-  date = args.args[:date]
-  distribution = ""
-  args.args.each_pair do |key, value|
-    next if Arguments.get_input_args.include? key.to_s
-    distribution << "#{key}: #{value}, "
-  end
-  distribution.delete_suffix!(", ")
-  db.execute "INSERT INTO inputs VALUES (?, ?, ?)", 
-    [name, date, distribution]
-
-elsif args.operation == "add_account"
-  name = args.args[:name]
-  type = args.args[:type]
-  balance = args.args[:balance]
-  target = args.args[:target]
-  db.execute "INSERT INTO accounts VALUES (?, ?, ?, ?, ?, ?)", 
-    [name, type, balance.dollars, balance.cents, target.dollars, target.cents]
-
-elsif args.operation == "up_account"
-  name = args.args[:name]
-  type = args.args[:type]
-  balance = args.args[:balance]
-  target = args.args[:target]
-  db.execute "UPDATE accounts SET type = (?), balance_dollars = (?), balance_cents = (?), target_dollars = (?), target_cents = (?) WHERE UPPER(name) = UPPER(?)", 
-    [type, balance.dollars, balance.cents, target.dollars, target.cents, name]
-
-elsif args.operation == "rm_account"
-  name = args.args[:name]
-  db.execute "DELETE FROM accounts WHERE UPPER(name) = UPPER(?)", [name]
 
 else 
-  p Database::Account.getAccountList
   p "see help menu -h"
 end
 

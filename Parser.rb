@@ -24,8 +24,18 @@ class Parser
       end
 
       opts.on("-i", "--input {hash}",
-              "Input funds into categories, {name, date, total, (multiple)category=>amount}") do |input|
+              "Input funds into categories, {name, date, (multiple)category=>amount}") do |input|
         args.set_input(parse_args_from_h(input))
+      end
+
+      opts.on("--remove_input id",
+              "remove an input by id") do |id|
+        args.set_rm_input(id)
+      end
+
+      opts.on("--update_input {hash}",
+              "Update Input funds, {id, name, date, (multiple)category=>amount}") do |input|
+        args.set_up_input(parse_args_from_h(input))
       end
 
       opts.on("--add_account {hash}",
@@ -34,7 +44,7 @@ class Parser
       end
 
       opts.on("--update_account {hash}",
-              "updates an account by name (hash) {name, type, balance, target}") do |up_account|
+              "updates an account by name (hash) {name, new_name, type, balance, target}") do |up_account|
         args.set_up_account(parse_args_from_h(up_account))
       end
 
@@ -51,6 +61,15 @@ class Parser
       opts.on("-r", "--recent {hash}",
               "show recent transactions, {type: limit [num], month, date [range_start, range_end]}") do |recent|
         args.set_recent(parse_args_from_h(recent))
+      end
+
+      opts.on("--list-accounts", "list account data") do
+        args.set_list_accounts
+      end
+
+      opts.on("--recent_inputs {hash}",
+              "show recent transactions, {type: limit [num], month, date [range_start, range_end]}") do |recent_inputs|
+        args.set_recent_inputs(parse_args_from_h(recent_inputs))
       end
 
       opts.on("-h", "--help", "Prints this help") do

@@ -8,8 +8,9 @@ module Database
       Database::DB.execute ADD_DB_STRING,
         [hash[:name], hash[:desc],
          hash[:date], hash[:amount].to_s,
-         hash[:category]]
-      Database::Account.output({hash[:category]=>hash[:amount]})
+         hash[:account]]
+      p hash[:amount].to_s
+      Database::Account.output({hash[:account]=>hash[:amount].to_s})
     end
   
     def self.rmTrans id
@@ -24,8 +25,8 @@ module Database
       Database::DB.execute UP_DB_STRING,
         [hash[:name], hash[:desc],
          hash[:date], hash[:amount].to_s,
-         hash[:category], hash[:id]]
-      Database::Account.output({hash[:category]=>hash[:amount]})
+         hash[:account], hash[:id]]
+      Database::Account.output({hash[:account]=>hash[:amount].to_s})
     end
   
     def self.isIdValid id
@@ -37,6 +38,7 @@ module Database
     def self.undoTrans id
       row = Database::DB.execute SELECT_DB_STRING, [id]
       row.flatten!
+      p row
       Database::Account.input({row[0]=>row[1]})
     end
   end
